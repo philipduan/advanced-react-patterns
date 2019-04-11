@@ -17,14 +17,33 @@ import {Switch} from '../switch'
 // 🐨 create a function called `useToggle` and move all the toggle logic to
 // that function then call `useToggle` in the Toggle function.
 
-function Toggle({onToggle}) {
-  const [on, setOn] = React.useState(false)
+const noop = () => {}
 
+function toggleReducer(state, {type}) {
+  switch (type) {
+    case 'toggle':
+      return {
+        on: !state.on,
+      }
+    default:
+      throw new Error(`Unsupported type: ${type}`)
+  }
+}
+
+const useToggle = ({onToggle = noop} = {}) => {
+  const [{on}, dispatch] = React.useReducer(toggleReducer, {
+    on: false,
+  })
   function toggle() {
     const newOn = !on
-    setOn(newOn)
+    dispatch({type: 'toggle'})
     onToggle(newOn)
   }
+  return [on, toggle]
+}
+
+function Toggle({onToggle}) {
+  const [on, toggle] = useToggle({onToggle})
 
   return <Switch on={on} onClick={toggle} />
 }
